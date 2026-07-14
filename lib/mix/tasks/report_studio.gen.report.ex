@@ -201,6 +201,10 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
             defmodule #{web_module_name}.PageHTML do
               use Phoenix.Component
 
+              use Phoenix.VerifiedRoutes,
+                endpoint: #{web_module_name}.Endpoint,
+                router: #{web_module_name}.Router
+
               embed_templates "page_html/*"
             end
             """
