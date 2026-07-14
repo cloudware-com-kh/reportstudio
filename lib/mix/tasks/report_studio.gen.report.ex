@@ -174,6 +174,12 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     |> Igniter.Project.Config.configure(
       "config.exs",
       :tailwind,
+      [:version],
+      "4.3.0"
+    )
+    |> Igniter.Project.Config.configure(
+      "config.exs",
+      :tailwind,
       [tailwind_key],
       {:code,
        Sourceror.parse_string!("""
@@ -196,7 +202,11 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
        Sourceror.parse_string!("{Tailwind, :install_and_run, [:#{tailwind_key}, ~w(--watch)]}")}
     )
     # Patch mix.exs aliases safely
-    |> Igniter.Project.TaskAliases.add_alias("assets.build", "tailwind #{name}", if_exists: :append)
-    |> Igniter.Project.TaskAliases.add_alias("assets.deploy", "tailwind #{name} --minify", if_exists: :append)
+    |> Igniter.Project.TaskAliases.add_alias("assets.build", "tailwind #{name}",
+      if_exists: :append
+    )
+    |> Igniter.Project.TaskAliases.add_alias("assets.deploy", "tailwind #{name} --minify",
+      if_exists: :append
+    )
   end
 end
