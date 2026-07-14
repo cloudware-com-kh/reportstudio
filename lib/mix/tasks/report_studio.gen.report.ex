@@ -157,25 +157,54 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
         )
       end
     end)
-    # Create PageHTML if missing
+    # Create PageHTML if missing, or move it if it is in the wrong place
     |> then(fn igniter ->
-      {exists?, igniter} =
-        Igniter.Project.Module.module_exists(igniter, Module.concat(web_module, PageHTML))
+      case Igniter.Project.Module.find_module(igniter, Module.concat(web_module, PageHTML)) do
+        {:ok, {igniter, source, _zipper}} ->
+          current_path = source.path
+          target_path = "#{web_dir}/controllers/page_html.ex"
 
-      if exists? do
-        igniter
-      else
-        Igniter.create_new_file(
-          igniter,
-          "#{web_dir}/controllers/page_html.ex",
-          """
-          defmodule #{web_module_name}.PageHTML do
-            use Phoenix.Component
+          if current_path != target_path and String.ends_with?(current_path, "page_html.ex") do
+            igniter = Igniter.include_existing_file(igniter, current_path)
+            old_templates_dir = "#{web_dir}/page_html"
+            new_templates_dir = "#{web_dir}/controllers/page_html"
 
-            embed_templates "page_html/*"
+            on_disk = Path.wildcard("#{old_templates_dir}/**/*")
+
+            in_rewrite =
+              igniter.rewrite
+              |> Rewrite.paths()
+              |> Enum.filter(&String.starts_with?(&1, old_templates_dir <> "/"))
+
+            templates = Enum.uniq(on_disk ++ in_rewrite)
+
+            igniter =
+              Enum.reduce(templates, igniter, fn template_path, igniter ->
+                relative_path = String.replace_prefix(template_path, old_templates_dir <> "/", "")
+                target_template_path = Path.join(new_templates_dir, relative_path)
+
+                igniter
+                |> Igniter.include_existing_file(template_path)
+                |> Igniter.move_file(template_path, target_template_path)
+              end)
+
+            Igniter.move_file(igniter, current_path, target_path)
+          else
+            igniter
           end
-          """
-        )
+
+        {:error, igniter} ->
+          Igniter.create_new_file(
+            igniter,
+            "#{web_dir}/controllers/page_html.ex",
+            """
+            defmodule #{web_module_name}.PageHTML do
+              use Phoenix.Component
+
+              embed_templates "page_html/*"
+            end
+            """
+          )
       end
     end)
     # Append route to router.ex using manual update to target the Web scope
