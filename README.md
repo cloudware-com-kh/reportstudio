@@ -15,7 +15,7 @@ Add `:report_studio` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:report_studio, git: "https://github.com/cloudware-com-kh/reportstudio.git", tag: "main"},
+    {:report_studio, git: "https://github.com/cloudware-com-kh/reportstudio.git", branch: "main"},
     # Make sure you include igniter if you want to use the generators!
     {:igniter, "~> 0.8"}
   ]
