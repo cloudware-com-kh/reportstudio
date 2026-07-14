@@ -1,0 +1,2 @@
+@import "tailwindcss" source(none);
+@source "../../lib/reportplay_web/controllers/employee_report_html/report.html.heex";

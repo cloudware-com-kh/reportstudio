@@ -72,6 +72,14 @@ config :tailwind,
   ),
     cd: Path.expand("..", __DIR__),
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
+  ],
+  employee_report: [
+    args: ~w(
+    --input=assets/css/employee_report.css
+    --output=priv/static/assets/css/employee_report.css
+  ),
+    cd: Path.expand("..", __DIR__),
+    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ]
 
 # Configure Elixir's Logger

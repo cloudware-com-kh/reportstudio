@@ -16,6 +16,7 @@ defmodule ReportplayWeb.Router do
 
   scope "/", ReportplayWeb do
     pipe_through :browser
+    get "/employee_report", Controllers.EmployeeReportController, :show
     get "/student_report", Controllers.StudentReportController, :show
 
     get "/", PageController, :home
