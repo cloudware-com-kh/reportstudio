@@ -140,7 +140,10 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     |> Igniter.create_new_file(css_path, css_content)
     # Create PageController if missing
     |> then(fn igniter ->
-      if File.exists?("#{web_dir}/controllers/page_controller.ex") do
+      {exists?, igniter} =
+        Igniter.Project.Module.module_exists(igniter, Module.concat(web_module, PageController))
+
+      if exists? do
         igniter
       else
         Igniter.create_new_file(
@@ -156,7 +159,10 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     end)
     # Create PageHTML if missing
     |> then(fn igniter ->
-      if File.exists?("#{web_dir}/controllers/page_html.ex") do
+      {exists?, igniter} =
+        Igniter.Project.Module.module_exists(igniter, Module.concat(web_module, PageHTML))
+
+      if exists? do
         igniter
       else
         Igniter.create_new_file(
