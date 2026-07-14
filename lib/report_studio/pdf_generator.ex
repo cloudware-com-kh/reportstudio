@@ -1,19 +1,15 @@
 defmodule ReportStudio.PDFGenerator do
-  @gotenberg_url "https://gotenberg.cloudware.com.kh/forms/chromium/convert/html"
-  @auth {:basic, "admin:admin@reportengine"}
-
   @doc """
   Generates a PDF from a rendered Phoenix template and a CSS file path.
   - `template` is a rendered Phoenix template (e.g. from a component or view function).
-  - `css_path_relative` is the path to the CSS file inside `priv/static/assets/`, for example `"css/employee.css"`.
+  - `css_path` is the absolute path to the CSS file.
   """
-  def generate_pdf(template, css_path_relative) do
+  def generate_pdf(template, css_path) do
     html_binary =
       template
       |> Phoenix.HTML.Safe.to_iodata()
       |> IO.iodata_to_binary()
 
-    css_path = Application.app_dir(:report_studio, "priv/static/assets/#{css_path_relative}")
     css_binary = File.read!(css_path)
 
     generate_pdf_from_html(html_binary, css_binary)
@@ -23,8 +19,8 @@ defmodule ReportStudio.PDFGenerator do
   Generates a PDF binary from HTML and CSS using Gotenberg.
   """
   def generate_pdf_from_html(html_binary, css_binary) do
-    case Req.post(@gotenberg_url,
-           auth: @auth,
+    case Req.post(gotenberg_url(),
+           auth: gotenberg_auth(),
            headers: [{"gotenberg-timeout", "300s"}],
            receive_timeout: 300_000,
            form_multipart: [
@@ -67,5 +63,17 @@ defmodule ReportStudio.PDFGenerator do
 
   def send_inline_pdf(conn, pdf_binary, filename) when is_binary(pdf_binary) do
     send_inline_pdf(conn, {:ok, pdf_binary}, filename)
+  end
+
+  defp gotenberg_url do
+    Application.get_env(
+      :report_studio,
+      :gotenberg_url,
+      "https://gotenberg.domain.com/forms/chromium/convert/html"
+    )
+  end
+
+  defp gotenberg_auth do
+    Application.get_env(:report_studio, :gotenberg_auth, {:basic, "admin:admin@reportengine"})
   end
 end

@@ -1,0 +1,2 @@
+@import "tailwindcss" source(none);
+@source "../../lib/report_studio_web/controllers/page_html/custom_report.html.heex";

@@ -8,14 +8,8 @@ defmodule ReportStudio.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      ReportStudioWeb.Telemetry,
-      ReportStudio.Repo,
-      {DNSCluster, query: Application.get_env(:report_studio, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: ReportStudio.PubSub},
-      # Start a worker by calling: ReportStudio.Worker.start_link(arg)
-      # {ReportStudio.Worker, arg},
-      # Start to serve requests, typically the last entry
-      ReportStudioWeb.Endpoint
+      # Since this is a library, no processes need to be started by default.
+      # The PDF generator and Mix tasks are executed without long-running processes.
     ]
 
     # See https://elixir.hexdocs.pm/Supervisor.html
@@ -27,8 +21,7 @@ defmodule ReportStudio.Application do
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
   @impl true
-  def config_change(changed, _new, removed) do
-    ReportStudioWeb.Endpoint.config_change(changed, removed)
+  def config_change(_changed, _new, _removed) do
     :ok
   end
 end

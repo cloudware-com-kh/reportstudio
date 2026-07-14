@@ -1,58 +1,76 @@
 # Report Studio
 
-To start your Phoenix server:
+Report Studio is a lightweight Phoenix library and generator for scaffolding custom, Tailwind-powered PDF reports using Gotenberg.
 
-* Run `mix setup` to install and setup dependencies
-* Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+## Features
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+- **Dynamic Mix Generator:** Scaffolds custom reports in your host application with zero boilerplate.
+- **Dedicated Tailwind Builds:** Automatically configures standalone Tailwind entry points for each report.
+- **Gotenberg Integration:** Provides an easy-to-use API to convert your HEEx templates and CSS into PDFs.
 
-Ready to run in production? Please [check our deployment guides](https://phoenix.hexdocs.pm/deployment.html).
+## Installation
 
-## Learn more
+Add `:report_studio` to your list of dependencies in `mix.exs`:
 
-* Official website: https://www.phoenixframework.org/
-* Guides: https://phoenix.hexdocs.pm/overview.html
-* Docs: https://phoenix.hexdocs.pm
-* Forum: https://elixirforum.com/c/phoenix-forum
-* Source: https://github.com/phoenixframework/phoenix
+```elixir
+def deps do
+  [
+    {:report_studio, git: "https://github.com/cloudware-com-kh/reportstudio.git", tag: "main"},
+    # Make sure you include igniter if you want to use the generators!
+    {:igniter, "~> 0.8"}
+  ]
+end
+```
 
+## Configuration
 
-```css
-@page { size: A3; }
-@page { size: A4; }
-@page { size: A5; }
-@page { size: B4; }
-@page { size: B5; }
-@page { size: letter; } /* 8.5in x 11in */
-@page { size: legal; }  /* 8.5in x 14in */
-@page { size: ledger; } /* 11in x 17in */
-@page { size: A4 landscape; }
-@page { size: letter portrait; }
-@page { size: 54mm 86mm; }   /* Standard CR80 ID Card */
-@page { size: 80mm 250mm; }  /* POS Thermal Receipt */
-@page { size: 4in 6in; }     /* Shipping Label */
-@page { margin: 0; }                  /* Blank canvas (Recommended for Tailwind) */
-@page { margin: 20mm; }               /* 20mm on all 4 sides */
-@page { margin: 25mm 15mm; }          /* Top/Bottom 25mm, Left/Right 15mm */
-@page { margin: 10mm 15mm 20mm 15mm; } /* Top, Right, Bottom, Left */
-@page {
-  size: A4;
-  margin: 20mm;
-}
+In your `config/config.exs`, configure the URL and basic auth credentials for your Gotenberg instance:
 
-@page :first {
-  margin: 0;
-}
-@page :left {
-  /* Binding is on the right side of a left-hand page */
-  margin-left: 15mm;
-  margin-right: 30mm; 
-}
+```elixir
+config :report_studio,
+  gotenberg_url: System.get_env("GOTENBERG_URL") || "https://gotenberg.domain.com/forms/chromium/convert/html",
+  gotenberg_auth: {:basic, "admin:admin@reportengine"}
+```
 
-@page :right {
-  /* Binding is on the left side of a right-hand page */
-  margin-left: 30mm;
-  margin-right: 15mm;
-}
+## Usage
+
+### 1. Generate a New Report
+
+Use the included Mix task to scaffold a new report. For example, to create an `invoice` report:
+
+```bash
+mix report_studio.gen.report invoice
+```
+
+This task will automatically:
+- Create a dedicated HEEx template at `lib/your_app_web/controllers/page_html/invoice.html.heex`
+- Create a dedicated Tailwind CSS file at `assets/css/invoice.css`
+- Append the `invoice` and `invoice_preview` routes to your `router.ex`
+- Append the controller actions to your `page_controller.ex`
+- Safely update your `mix.exs` aliases and `dev.exs` watchers to compile the new Tailwind CSS for the report.
+
+### 2. View your Report
+
+Start your Phoenix server:
+```bash
+mix phx.server
+```
+Navigate to `/invoice` to see the raw HTML report, or `/invoice-preview` to view the generated PDF via Gotenberg!
+
+### 3. Using the PDFGenerator Manually
+
+If you prefer to generate PDFs manually without using the scaffolder, you can use `ReportStudio.PDFGenerator`:
+
+```elixir
+# 1. Render your template to a string/iodata
+template = YourAppWeb.PageHTML.invoice(assigns)
+
+# 2. Get the absolute path to your compiled CSS
+css_path = Application.app_dir(:your_app, "priv/static/assets/css/invoice.css")
+
+# 3. Generate the PDF
+{:ok, pdf_binary} = ReportStudio.PDFGenerator.generate_pdf(template, css_path)
+
+# 4. (Optional) Send inline to the client in a controller
+ReportStudio.PDFGenerator.send_inline_pdf(conn, pdf_binary, "invoice.pdf")
 ```

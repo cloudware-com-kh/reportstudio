@@ -41,39 +41,11 @@ defmodule ReportStudio.MixProject do
   defp deps do
     [
       {:phoenix, "~> 1.8.9"},
-      {:phoenix_ecto, "~> 4.5"},
-      {:ecto_sql, "~> 3.13"},
-      {:postgrex, ">= 0.0.0"},
       {:phoenix_html, "~> 4.1"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:phoenix_live_view, "~> 1.2.0"},
-      {:lazy_html, ">= 0.1.0", only: :test},
-      {:igniter, "~> 0.8", only: [:dev, :test]},
-      {:phoenix_live_dashboard, "~> 0.8.3"},
-      {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
-      {:tailwind, "~> 0.5", runtime: Mix.env() == :dev},
-      {:heroicons,
-       github: "tailwindlabs/heroicons",
-       tag: "v2.2.0",
-       sparse: "optimized",
-       app: false,
-       compile: false,
-       depth: 1},
-      {:daisyui,
-       github: "saadeghi/daisyui",
-       tag: "v5.5.20",
-       sparse: "packages/bundle",
-       app: false,
-       compile: false,
-       depth: 1},
-      {:swoosh, "~> 1.16"},
+      {:igniter, "~> 0.8", optional: true},
       {:req, "~> 0.6"},
-      {:telemetry_metrics, "~> 1.0"},
-      {:telemetry_poller, "~> 1.0"},
-      {:gettext, "~> 1.0"},
-      {:jason, "~> 1.2"},
-      {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:jason, "~> 1.2"}
     ]
   end
 
@@ -85,29 +57,8 @@ defmodule ReportStudio.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
-      "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
-      "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": [
-        "compile",
-        "tailwind report_studio",
-        "tailwind student",
-        "tailwind employee_report",
-        "tailwind student_report",
-        "tailwind report",
-        "esbuild report_studio"
-      ],
-      "assets.deploy": [
-        "tailwind report_studio --minify",
-        "tailwind student --minify",
-        "tailwind employee_report --minify",
-        "tailwind student_report --minify",
-        "tailwind report --minify",
-        "esbuild report_studio --minify",
-        "phx.digest"
-      ],
+      setup: ["deps.get"],
+      test: ["test"],
       precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end

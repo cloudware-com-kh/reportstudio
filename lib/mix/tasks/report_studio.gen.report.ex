@@ -56,8 +56,14 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     name = Macro.underscore(raw_name)
     human_name = name |> String.split("_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ")
 
+    # Dynamic variables
+    app_name = Igniter.Project.Application.app_name(igniter)
+    web_module = Igniter.Libs.Phoenix.web_module(igniter)
+    web_module_name = inspect(web_module)
+    web_dir = "lib/#{Macro.underscore(web_module_name)}"
+
     # 1. Define paths and names
-    heex_path = "lib/report_studio_web/controllers/page_html/#{name}.html.heex"
+    heex_path = "#{web_dir}/controllers/page_html/#{name}.html.heex"
     css_path = "assets/css/#{name}.css"
 
     heex_content = """
@@ -88,7 +94,7 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
 
     css_content = """
     @import "tailwindcss" source(none);
-    @source "../../lib/report_studio_web/controllers/page_html/#{name}.html.heex";
+    @source "../../#{web_dir}/controllers/page_html/#{name}.html.heex";
     """
 
     route_code = """
@@ -117,9 +123,9 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
           ]
         }
 
-        template = ReportStudioWeb.PageHTML.#{name}(assigns)
-
-        result = ReportStudio.PDFGenerator.generate_pdf(template, "css/#{name}.css")
+        template = #{web_module_name}.PageHTML.#{name}(assigns)
+        css_path = Application.app_dir(:#{app_name}, "priv/static/assets/css/#{name}.css")
+        result = ReportStudio.PDFGenerator.generate_pdf(template, css_path)
         ReportStudio.PDFGenerator.send_inline_pdf(conn, result, "report.pdf")
       end
     """
@@ -132,8 +138,8 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     # Create new files
     |> Igniter.create_new_file(heex_path, heex_content)
     |> Igniter.create_new_file(css_path, css_content)
-    # Append route to router.ex using manual update to target the ReportStudioWeb scope
-    |> Igniter.update_file("lib/report_studio_web/router.ex", fn source ->
+    # Append route to router.ex using manual update to target the Web scope
+    |> Igniter.update_file("#{web_dir}/router.ex", fn source ->
       content = Rewrite.Source.get(source, :content)
 
       new_content =
@@ -142,15 +148,15 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
         else
           String.replace(
             content,
-            "scope \"/\", ReportStudioWeb do\n    pipe_through :browser",
-            "scope \"/\", ReportStudioWeb do\n    pipe_through :browser\n#{route_code}"
+            "scope \"/\", #{web_module_name} do\n    pipe_through :browser",
+            "scope \"/\", #{web_module_name} do\n    pipe_through :browser\n#{route_code}"
           )
         end
 
       Rewrite.Source.update(source, :content, new_content)
     end)
     # Append actions to page_controller.ex
-    |> Igniter.update_file("lib/report_studio_web/controllers/page_controller.ex", fn source ->
+    |> Igniter.update_file("#{web_dir}/controllers/page_controller.ex", fn source ->
       content = Rewrite.Source.get(source, :content)
 
       new_content =
@@ -184,31 +190,13 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     # Configure config/dev.exs watcher
     |> Igniter.Project.Config.configure(
       "dev.exs",
-      :report_studio,
-      [ReportStudioWeb.Endpoint, :watchers, watcher_key],
+      app_name,
+      [Module.concat(web_module, Endpoint), :watchers, watcher_key],
       {:code,
        Sourceror.parse_string!("{Tailwind, :install_and_run, [:#{tailwind_key}, ~w(--watch)]}")}
     )
-    # Patch mix.exs
-    |> Igniter.update_file("mix.exs", fn source ->
-      content = Rewrite.Source.get(source, :content)
-
-      new_content =
-        if String.contains?(content, "\"tailwind #{name}\"") do
-          content
-        else
-          content
-          |> String.replace(
-            "\"tailwind report_studio\",",
-            "\"tailwind report_studio\", \"tailwind #{name}\","
-          )
-          |> String.replace(
-            "\"tailwind report_studio --minify\",",
-            "\"tailwind report_studio --minify\",\n        \"tailwind #{name} --minify\","
-          )
-        end
-
-      Rewrite.Source.update(source, :content, new_content)
-    end)
+    # Patch mix.exs aliases safely
+    |> Igniter.Project.TaskAliases.add_alias("assets.build", "tailwind #{name}", if_exists: :append)
+    |> Igniter.Project.TaskAliases.add_alias("assets.deploy", "tailwind #{name} --minify", if_exists: :append)
   end
 end
