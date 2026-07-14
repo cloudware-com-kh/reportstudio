@@ -138,6 +138,28 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     # Create new files
     |> Igniter.create_new_file(heex_path, heex_content)
     |> Igniter.create_new_file(css_path, css_content)
+    # Create PageController if missing
+    |> Igniter.create_new_file(
+      "#{web_dir}/controllers/page_controller.ex",
+      """
+      defmodule #{web_module_name}.PageController do
+        use #{web_module_name}, :controller
+      end
+      """,
+      on_exists: :skip
+    )
+    # Create PageHTML if missing
+    |> Igniter.create_new_file(
+      "#{web_dir}/controllers/page_html.ex",
+      """
+      defmodule #{web_module_name}.PageHTML do
+        use #{web_module_name}, :html
+
+        embed_templates "page_html/*"
+      end
+      """,
+      on_exists: :skip
+    )
     # Append route to router.ex using manual update to target the Web scope
     |> Igniter.update_file("#{web_dir}/router.ex", fn source ->
       content = Rewrite.Source.get(source, :content)
