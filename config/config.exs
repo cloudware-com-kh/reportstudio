@@ -57,26 +57,10 @@ config :tailwind,
     cd: Path.expand("..", __DIR__),
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
   ],
-  report: [
+  employee: [
     args: ~w(
-      --input=assets/css/report.css
-      --output=priv/static/assets/css/report.css
-    ),
-    cd: Path.expand("..", __DIR__),
-    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
-  ],
-  student_report: [
-    args: ~w(
-    --input=assets/css/student_report.css
-    --output=priv/static/assets/css/student_report.css
-  ),
-    cd: Path.expand("..", __DIR__),
-    env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
-  ],
-  employee_report: [
-    args: ~w(
-    --input=assets/css/employee_report.css
-    --output=priv/static/assets/css/employee_report.css
+    --input=assets/css/employee.css
+    --output=priv/static/assets/css/employee.css
   ),
     cd: Path.expand("..", __DIR__),
     env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}

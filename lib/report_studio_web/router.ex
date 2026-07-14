@@ -16,11 +16,8 @@ defmodule ReportStudioWeb.Router do
 
   scope "/", ReportStudioWeb do
     pipe_through :browser
-    get "/employee_report", Controllers.EmployeeReportController, :show
-    get "/student_report", Controllers.StudentReportController, :show
-
     get "/", PageController, :home
-    get "/report", PageController, :report
+    get "/employee", PageController, :employee
   end
 
   # Other scopes may use custom stacks.
