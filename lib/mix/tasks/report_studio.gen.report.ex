@@ -170,7 +170,7 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
           "#{web_dir}/controllers/page_html.ex",
           """
           defmodule #{web_module_name}.PageHTML do
-            use #{web_module_name}, :html
+            use Phoenix.Component
 
             embed_templates "page_html/*"
           end
