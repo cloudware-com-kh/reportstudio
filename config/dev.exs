@@ -27,7 +27,8 @@ config :reportplay, ReportplayWeb.Endpoint,
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:reportplay, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:reportplay, ~w(--watch)]},
-    tailwind_report: {Tailwind, :install_and_run, [:report, ~w(--watch)]}
+    tailwind_report: {Tailwind, :install_and_run, [:report, ~w(--watch)]},
+    tailwind_student_report: {Tailwind, :install_and_run, [:student_report, ~w(--watch)]}
   ]
 
 # ## SSL Support
