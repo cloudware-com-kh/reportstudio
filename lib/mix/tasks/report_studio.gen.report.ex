@@ -112,7 +112,7 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
           ]
         }
 
-        render_report(conn, :#{name}, assigns)
+        ReportStudio.PDFGenerator.render_report(conn, :#{name}, assigns)
       end
 
       def #{name}_preview(conn, _params) do

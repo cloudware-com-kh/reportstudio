@@ -76,4 +76,14 @@ defmodule ReportStudio.PDFGenerator do
   defp gotenberg_auth do
     Application.get_env(:report_studio, :gotenberg_auth, {:basic, "admin:admin@reportengine"})
   end
+
+  @doc """
+  Helper function to render a report HTML template without a layout.
+  Intended to be called from your Phoenix controllers.
+  """
+  def render_report(conn, template_name, assigns) do
+    conn
+    |> Phoenix.Controller.put_layout(false)
+    |> Phoenix.Controller.render(template_name, assigns)
+  end
 end
