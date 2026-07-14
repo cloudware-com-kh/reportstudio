@@ -54,49 +54,33 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
   def igniter(igniter) do
     raw_name = igniter.args.positional.name
     name = Macro.underscore(raw_name)
-    module_name_suffix = Macro.camelize(name)
     human_name = name |> String.split("_") |> Enum.map(&String.capitalize/1) |> Enum.join(" ")
 
     # 1. Define paths and names
-    controller_path = "lib/report_studio_web/controllers/#{name}_report_controller.ex"
-    html_path = "lib/report_studio_web/controllers/#{name}_report_html.ex"
-    heex_path = "lib/report_studio_web/controllers/#{name}_report_html/report.html.heex"
-    css_path = "assets/css/#{name}_report.css"
-
-    controller_content = """
-    defmodule ReportStudioWeb.Controllers.#{module_name_suffix}ReportController do
-      use ReportStudioWeb, :controller
-
-      def show(conn, _params) do
-        assigns = %{student: %{name: "Cham Roeun"}}
-
-        conn
-        |> put_root_layout(false)
-        |> put_layout(false)
-        |> render(:report, assigns)
-      end
-    end
-    """
-
-    html_content = """
-    defmodule ReportStudioWeb.Controllers.#{module_name_suffix}ReportHTML do
-      use ReportStudioWeb, :html
-
-      embed_templates "#{name}_report_html/*"
-    end
-    """
+    heex_path = "lib/report_studio_web/controllers/page_html/#{name}.html.heex"
+    css_path = "assets/css/#{name}.css"
 
     heex_content = """
     <!DOCTYPE html>
     <html>
       <head>
         <meta charset="utf-8" />
-        <link rel="stylesheet" href={~p"/assets/css/#{name}_report.css"} />
+        <link rel="stylesheet" href={~p"/assets/css/#{name}.css"} />
+        <link rel="stylesheet" href="report.css" />
+        <style>
+          @page { size: A4 portrait; margin: 0; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        </style>
       </head>
-      <body class="bg-white">
-        <div class="w-[210mm] h-[297mm] p-[20mm]">
+      <!-- Add flex-col and gap-12 here so the pages stack visually in your browser -->
+      <body class="bg-slate-300 print:bg-white flex flex-col items-center py-12 gap-12 print:py-0 print:gap-0 print:block">
+        <!-- Loop the PAPER wrapper, not just the content -->
+        <div
+          :for={#{name} <- @#{name}s}
+          class="w-[210mm] h-[297mm] p-[20mm] bg-white shadow-2xl print:shadow-none box-border relative break-after-page"
+        >
           <h1 class="text-3xl font-bold">#{human_name} Report</h1>
-          <p>Name: {@student.name}</p>
+          <p>Name: {#{name}.name}</p>
         </div>
       </body>
     </html>
@@ -104,20 +88,48 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
 
     css_content = """
     @import "tailwindcss" source(none);
-    @source "../../lib/report_studio_web/controllers/#{name}_report_html/report.html.heex";
+    @source "../../lib/report_studio_web/controllers/page_html/#{name}.html.heex";
     """
 
-    route_code =
-      "get \"/#{name}_report\", Controllers.#{module_name_suffix}ReportController, :show"
+    route_code = """
+        get "/#{name}", PageController, :#{name}
+        get "/#{name}-preview", PageController, :#{name}_preview
+    """
+
+    controller_actions = """
+
+      def #{name}(conn, _params) do
+        assigns = %{
+          #{name}s: [
+            %{name: "Cham Roeun"},
+            %{name: "John Doe"}
+          ]
+        }
+
+        render_report(conn, :#{name}, assigns)
+      end
+
+      def #{name}_preview(conn, _params) do
+        assigns = %{
+          #{name}s: [
+            %{name: "Cham Roeun"},
+            %{name: "John Doe"}
+          ]
+        }
+
+        template = ReportStudioWeb.PageHTML.#{name}(assigns)
+
+        result = ReportStudio.PDFGenerator.generate_pdf(template, "css/#{name}.css")
+        ReportStudio.PDFGenerator.send_inline_pdf(conn, result, "report.pdf")
+      end
+    """
 
     # 2. Add files and configurations
-    tailwind_key = String.to_atom("#{name}_report")
-    watcher_key = String.to_atom("tailwind_#{name}_report")
+    tailwind_key = String.to_atom(name)
+    watcher_key = String.to_atom("tailwind_#{name}")
 
     igniter
     # Create new files
-    |> Igniter.create_new_file(controller_path, controller_content)
-    |> Igniter.create_new_file(html_path, html_content)
     |> Igniter.create_new_file(heex_path, heex_content)
     |> Igniter.create_new_file(css_path, css_content)
     # Append route to router.ex using manual update to target the ReportStudioWeb scope
@@ -125,14 +137,29 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
       content = Rewrite.Source.get(source, :content)
 
       new_content =
-        if String.contains?(content, route_code) do
+        if String.contains?(content, "get \"/#{name}\", PageController") do
           content
         else
           String.replace(
             content,
             "scope \"/\", ReportStudioWeb do\n    pipe_through :browser",
-            "scope \"/\", ReportStudioWeb do\n    pipe_through :browser\n    #{route_code}"
+            "scope \"/\", ReportStudioWeb do\n    pipe_through :browser\n#{route_code}"
           )
+        end
+
+      Rewrite.Source.update(source, :content, new_content)
+    end)
+    # Append actions to page_controller.ex
+    |> Igniter.update_file("lib/report_studio_web/controllers/page_controller.ex", fn source ->
+      content = Rewrite.Source.get(source, :content)
+
+      new_content =
+        if String.contains?(content, "def #{name}(") do
+          content
+        else
+          content
+          |> String.trim_trailing()
+          |> String.replace_suffix("end", controller_actions <> "\nend")
         end
 
       Rewrite.Source.update(source, :content, new_content)
@@ -146,8 +173,8 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
        Sourceror.parse_string!("""
        [
          args: ~w(
-           --input=assets/css/#{name}_report.css
-           --output=priv/static/assets/css/#{name}_report.css
+           --input=assets/css/#{name}.css
+           --output=priv/static/assets/css/#{name}.css
          ),
          cd: Path.expand("..", __DIR__),
          env: %{"NODE_PATH" => [Path.expand("../deps", __DIR__), Mix.Project.build_path()]}
@@ -167,17 +194,17 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
       content = Rewrite.Source.get(source, :content)
 
       new_content =
-        if String.contains?(content, "tailwind #{name}_report") do
+        if String.contains?(content, "\"tailwind #{name}\"") do
           content
         else
           content
           |> String.replace(
             "\"tailwind report_studio\",",
-            "\"tailwind report_studio\", \"tailwind #{name}_report\","
+            "\"tailwind report_studio\", \"tailwind #{name}\","
           )
           |> String.replace(
             "\"tailwind report_studio --minify\",",
-            "\"tailwind report_studio --minify\",\n        \"tailwind #{name}_report --minify\","
+            "\"tailwind report_studio --minify\",\n        \"tailwind #{name} --minify\","
           )
         end
 
