@@ -1,4 +1,4 @@
-# Reportplay
+# Report Studio
 
 To start your Phoenix server:
 

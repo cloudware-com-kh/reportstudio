@@ -7,19 +7,19 @@
 # General application configuration
 import Config
 
-config :reportplay,
-  ecto_repos: [Reportplay.Repo],
+config :report_studio,
+  ecto_repos: [ReportStudio.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true]
 
 # Configure the endpoint
-config :reportplay, ReportplayWeb.Endpoint,
+config :report_studio, ReportStudioWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [html: ReportplayWeb.ErrorHTML, json: ReportplayWeb.ErrorJSON],
+    formats: [html: ReportStudioWeb.ErrorHTML, json: ReportStudioWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: Reportplay.PubSub,
+  pubsub_server: ReportStudio.PubSub,
   live_view: [signing_salt: "T7MEm15q"]
 
 # Configure LiveView
@@ -34,12 +34,12 @@ config :phoenix_live_view,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :reportplay, Reportplay.Mailer, adapter: Swoosh.Adapters.Local
+config :report_studio, ReportStudio.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",
-  reportplay: [
+  report_studio: [
     args:
       ~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
     cd: Path.expand("../assets", __DIR__),
@@ -49,7 +49,7 @@ config :esbuild,
 # Configure tailwind (the version is required)
 config :tailwind,
   version: "4.3.0",
-  reportplay: [
+  report_studio: [
     args: ~w(
       --input=assets/css/app.css
       --output=priv/static/assets/css/app.css

@@ -12,20 +12,20 @@ import Config
 # If you use `mix release`, you need to explicitly enable the server
 # by passing the PHX_SERVER=true when you start it:
 #
-#     PHX_SERVER=true bin/reportplay start
+#     PHX_SERVER=true bin/report_studio start
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
 if System.get_env("PHX_SERVER") do
-  config :reportplay, ReportplayWeb.Endpoint, server: true
+  config :report_studio, ReportStudioWeb.Endpoint, server: true
 end
 
-config :reportplay, ReportplayWeb.Endpoint,
+config :report_studio, ReportStudioWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
-  config :reportplay, ReportplayWeb.Endpoint,
+  config :report_studio, ReportStudioWeb.Endpoint,
     live_reload: [
       web_console_logger: true,
       patterns: [
@@ -34,8 +34,8 @@ if config_env() == :dev do
         # Gettext translations
         ~r"priv/gettext/.*\.po$"E,
         # Router, Controllers, LiveViews and LiveComponents
-        ~r"lib/reportplay_web/router\.ex$"E,
-        ~r"lib/reportplay_web/(controllers|live|components)/.*\.(ex|heex)$"E
+        ~r"lib/report_studio_web/router\.ex$"E,
+        ~r"lib/report_studio_web/(controllers|live|components)/.*\.(ex|heex)$"E
       ]
     ]
 end
@@ -50,7 +50,7 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
-  config :reportplay, Reportplay.Repo,
+  config :report_studio, ReportStudio.Repo,
     # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
@@ -72,9 +72,9 @@ if config_env() == :prod do
 
   host = System.get_env("PHX_HOST") || "example.com"
 
-  config :reportplay, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+  config :report_studio, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
-  config :reportplay, ReportplayWeb.Endpoint,
+  config :report_studio, ReportStudioWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
       # Enable IPv6 and bind on all interfaces.
@@ -90,7 +90,7 @@ if config_env() == :prod do
   # To get SSL working, you will need to add the `https` key
   # to your endpoint configuration:
   #
-  #     config :reportplay, ReportplayWeb.Endpoint,
+  #     config :report_studio, ReportStudioWeb.Endpoint,
   #       https: [
   #         ...,
   #         port: 443,
@@ -112,7 +112,7 @@ if config_env() == :prod do
   # We also recommend setting `force_ssl` in your config/prod.exs,
   # ensuring no data is ever sent via http, always redirecting to https:
   #
-  #     config :reportplay, ReportplayWeb.Endpoint,
+  #     config :report_studio, ReportStudioWeb.Endpoint,
   #       force_ssl: [hsts: true]
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
@@ -122,7 +122,7 @@ if config_env() == :prod do
   # In production you need to configure the mailer to use a different adapter.
   # Here is an example configuration for Mailgun:
   #
-  #     config :reportplay, Reportplay.Mailer,
+  #     config :report_studio, ReportStudio.Mailer,
   #       adapter: Swoosh.Adapters.Mailgun,
   #       api_key: System.get_env("MAILGUN_API_KEY"),
   #       domain: System.get_env("MAILGUN_DOMAIN")

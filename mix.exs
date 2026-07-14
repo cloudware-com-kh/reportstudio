@@ -1,9 +1,9 @@
-defmodule Reportplay.MixProject do
+defmodule ReportStudio.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :reportplay,
+      app: :report_studio,
       version: "0.1.0",
       elixir: "~> 1.17",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -20,7 +20,7 @@ defmodule Reportplay.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Reportplay.Application, []},
+      mod: {ReportStudio.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -92,18 +92,18 @@ defmodule Reportplay.MixProject do
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": [
         "compile",
-        "tailwind reportplay",
+        "tailwind report_studio",
         "tailwind employee_report",
         "tailwind student_report",
         "tailwind report",
-        "esbuild reportplay"
+        "esbuild report_studio"
       ],
       "assets.deploy": [
-        "tailwind reportplay --minify",
+        "tailwind report_studio --minify",
         "tailwind employee_report --minify",
         "tailwind student_report --minify",
         "tailwind report --minify",
-        "esbuild reportplay --minify",
+        "esbuild report_studio --minify",
         "phx.digest"
       ],
       precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]

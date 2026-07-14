@@ -1,11 +1,11 @@
 import Config
 
 # Configure your database
-config :reportplay, Reportplay.Repo,
+config :report_studio, ReportStudio.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  database: "reportplay_dev",
+  database: "report_studio_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -16,7 +16,7 @@ config :reportplay, Reportplay.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :reportplay, ReportplayWeb.Endpoint,
+config :report_studio, ReportStudioWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}],
@@ -25,8 +25,8 @@ config :reportplay, ReportplayWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "EGGS7YL64WaJPub0qcyfk0WycDsum5g6Hlv5Jr+c0tb3xKut2j7aFJvQLm4w8jAl",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:reportplay, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:reportplay, ~w(--watch)]},
+    esbuild: {Esbuild, :install_and_run, [:report_studio, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:report_studio, ~w(--watch)]},
     tailwind_report: {Tailwind, :install_and_run, [:report, ~w(--watch)]},
     tailwind_student_report: {Tailwind, :install_and_run, [:student_report, ~w(--watch)]},
     tailwind_employee_report: {Tailwind, :install_and_run, [:employee_report, ~w(--watch)]}
@@ -56,7 +56,7 @@ config :reportplay, ReportplayWeb.Endpoint,
 # different ports.
 
 # Enable dev routes for dashboard and mailbox
-config :reportplay, dev_routes: true
+config :report_studio, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
