@@ -43,6 +43,7 @@ defmodule ReportStudioWeb do
       use Gettext, backend: ReportStudioWeb.Gettext
 
       import Plug.Conn
+      import ReportStudioWeb.ReportHelpers
 
       unquote(verified_routes())
     end
