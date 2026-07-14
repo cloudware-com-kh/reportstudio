@@ -25,6 +25,8 @@ defmodule ReportStudio.PDFGenerator do
   def generate_pdf_from_html(html_binary, css_binary) do
     case Req.post(@gotenberg_url,
            auth: @auth,
+           headers: [{"gotenberg-timeout", "300s"}],
+           receive_timeout: 300_000,
            form_multipart: [
              files: {html_binary, filename: "index.html"},
              files: {css_binary, filename: "report.css"},
