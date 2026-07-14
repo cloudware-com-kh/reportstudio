@@ -32,4 +32,29 @@ defmodule ReportStudioWeb.PageController do
       | Enum.map(3..10, fn i -> %{name: "Dummy Employee #{i}"} end)
     ]
   end
+
+  def student(conn, _params) do
+    assigns = %{
+      students: [
+        %{name: "Cham Roeun"},
+        %{name: "John Doe"}
+      ]
+    }
+
+    render_report(conn, :student, assigns)
+  end
+
+  def student_preview(conn, _params) do
+    assigns = %{
+      students: [
+        %{name: "Cham Roeun"},
+        %{name: "John Doe"}
+      ]
+    }
+
+    template = ReportStudioWeb.PageHTML.student(assigns)
+
+    result = ReportStudio.PDFGenerator.generate_pdf(template, "css/student.css")
+    ReportStudio.PDFGenerator.send_inline_pdf(conn, result, "report.pdf")
+  end
 end

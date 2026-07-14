@@ -16,6 +16,9 @@ defmodule ReportStudioWeb.Router do
 
   scope "/", ReportStudioWeb do
     pipe_through :browser
+    get "/student", PageController, :student
+    get "/student-preview", PageController, :student_preview
+
     get "/", PageController, :home
     get "/employee", PageController, :employee
     get "/employee-preview", PageController, :employee_preview

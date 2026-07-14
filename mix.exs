@@ -93,6 +93,7 @@ defmodule ReportStudio.MixProject do
       "assets.build": [
         "compile",
         "tailwind report_studio",
+        "tailwind student",
         "tailwind employee_report",
         "tailwind student_report",
         "tailwind report",
@@ -100,6 +101,7 @@ defmodule ReportStudio.MixProject do
       ],
       "assets.deploy": [
         "tailwind report_studio --minify",
+        "tailwind student --minify",
         "tailwind employee_report --minify",
         "tailwind student_report --minify",
         "tailwind report --minify",

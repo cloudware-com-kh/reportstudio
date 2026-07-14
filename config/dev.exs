@@ -27,7 +27,8 @@ config :report_studio, ReportStudioWeb.Endpoint,
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:report_studio, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:report_studio, ~w(--watch)]},
-    tailwind_employee_report: {Tailwind, :install_and_run, [:employee, ~w(--watch)]}
+    tailwind_employee_report: {Tailwind, :install_and_run, [:employee, ~w(--watch)]},
+    tailwind_student: {Tailwind, :install_and_run, [:student, ~w(--watch)]}
   ]
 
 # ## SSL Support

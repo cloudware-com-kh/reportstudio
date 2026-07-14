@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href={~p"/assets/css/student.css"} />
+    <link rel="stylesheet" href="report.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Moul&display=swap" rel="stylesheet" />
+    <style>
+      @page { size: A4 portrait; margin: 0; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    </style>
+  </head>
+  <!-- Add flex-col and gap-12 here so the pages stack visually in your browser -->
+  <body class="bg-slate-300 print:bg-white flex flex-col items-center py-12 gap-12 print:py-0 print:gap-0 print:block">
+    <!-- Loop the PAPER wrapper, not just the content -->
+    <div
+      :for={student <- @students}
+      class="w-[210mm] h-[297mm] p-[20mm] bg-white shadow-2xl print:shadow-none box-border relative break-after-page"
+    >
+      <h1 class="text-3xl font-bold text-cyan-600">Student Report</h1>
+      <p>Name: {student.name}</p>
+      <p class="font-[Moul] text-green-600">ខ្មែរមានច្រើន</p>
+    </div>
+    <script>
+      // Wait for all Google Fonts to load
+      document.fonts.ready.then(() => {
+        // Signal Gotenberg that the page is ready to print
+        window.status = "fonts_loaded";
+      });
+    </script>
+  </body>
+</html>

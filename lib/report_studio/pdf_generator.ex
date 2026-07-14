@@ -30,7 +30,9 @@ defmodule ReportStudio.PDFGenerator do
            form_multipart: [
              files: {html_binary, filename: "index.html"},
              files: {css_binary, filename: "report.css"},
-             preferCssPageSize: "true"
+             preferCssPageSize: "true",
+             # Tell Gotenberg to wait for the JS signal
+             waitWindowStatus: "fonts_loaded"
            ]
          ) do
       {:ok, %Req.Response{status: 200, body: pdf_binary}} ->
