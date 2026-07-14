@@ -32,9 +32,11 @@ defmodule Mix.Tasks.ReportStudio.Gen.ReportTest do
     )
     # run our task
     |> Igniter.compose_task("report_studio.gen.report", ["student"])
-    # assert the old files are moved to the controllers directory
+    # assert the files are moved to the controllers directory
     |> assert_creates("lib/test_web/controllers/page_html.ex")
+    |> refute_creates("lib/test_web/page_html.ex")
     |> assert_creates("lib/test_web/controllers/page_html/old.html.heex")
+    |> refute_creates("lib/test_web/page_html/old.html.heex")
     # assert the new report files are created
     |> assert_creates("lib/test_web/controllers/page_html/student.html.heex")
     |> assert_creates("assets/css/student.css")

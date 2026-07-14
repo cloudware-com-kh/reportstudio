@@ -138,6 +138,13 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     # Create new files
     |> Igniter.create_new_file(heex_path, heex_content)
     |> Igniter.create_new_file(css_path, css_content)
+    # Ensure PageController and PageHTML are loaded from potential locations
+    |> then(fn igniter ->
+      igniter
+      |> Igniter.include_existing_file("#{web_dir}/controllers/page_controller.ex")
+      |> Igniter.include_existing_file("#{web_dir}/page_html.ex")
+      |> Igniter.include_existing_file("#{web_dir}/controllers/page_html.ex")
+    end)
     # Create PageController if missing
     |> then(fn igniter ->
       {exists?, igniter} =
