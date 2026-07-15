@@ -199,6 +199,21 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     # Configure config/config.exs
     |> Igniter.Project.Config.configure(
       "config.exs",
+      :report_studio,
+      [:gotenberg_url],
+      {:code,
+       Sourceror.parse_string!(
+         "System.get_env(\"GOTENBERG_URL\") || \"https://gotenberg.domain.com/forms/chromium/convert/html\""
+       )}
+    )
+    |> Igniter.Project.Config.configure(
+      "config.exs",
+      :report_studio,
+      [:gotenberg_auth],
+      {:code, Sourceror.parse_string!("{:basic, \"admin:admin@reportengine\"}")}
+    )
+    |> Igniter.Project.Config.configure(
+      "config.exs",
       :tailwind,
       [tailwind_key],
       {:code,
