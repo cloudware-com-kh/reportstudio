@@ -95,6 +95,7 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     css_content = """
     @import "tailwindcss" source(none);
     @source "../../#{web_dir}/controllers/page_html/#{name}.html.heex";
+    @source ".";
     """
 
     route_code = """
