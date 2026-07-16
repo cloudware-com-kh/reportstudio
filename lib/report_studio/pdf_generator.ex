@@ -27,8 +27,10 @@ defmodule ReportStudio.PDFGenerator do
              files: {html_binary, filename: "index.html"},
              files: {css_binary, filename: "report.css"},
              preferCssPageSize: "true",
-             # Tell Gotenberg to wait for the JS signal
-             waitWindowStatus: "fonts_loaded"
+             # Disable strict network idle (0 connections)
+             skipNetworkIdleEvent: "true",
+             # Enable almost network idle (max 2 connections)
+             skipNetworkAlmostIdleEvent: "false"
            ]
          ) do
       {:ok, %Req.Response{status: 200, body: pdf_binary}} ->

@@ -3,17 +3,17 @@ services:
     # image: gotenberg/gotenberg:8
     image: gotenberg/gotenberg:8-chromium
     restart: always
-    # ports:
-    #   - "3100:3000"
+    ports:
+      - "3100:3000"
     environment:
       # Use these specific variable names
       - API_ENABLE_BASIC_AUTH=true
       - GOTENBERG_API_BASIC_AUTH_USERNAME=admin
       - GOTENBERG_API_BASIC_AUTH_PASSWORD=admin@reportengine
 
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    restart: always
-    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
-    depends_on:
-      - gotenberg
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   restart: always
+  #   command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+  #   depends_on:
+  #     - gotenberg
