@@ -150,6 +150,7 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     watcher_key = String.to_atom("tailwind_#{name}")
 
     igniter
+    |> Igniter.Project.IgniterConfig.add_extension(Igniter.Extensions.Phoenix)
     # Create new files
     |> Igniter.create_new_file(heex_path, heex_content)
     |> Igniter.create_new_file(css_path, css_content)
