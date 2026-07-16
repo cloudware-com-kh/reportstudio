@@ -19,12 +19,26 @@ defmodule ReportStudio.PDFGenerator do
   Generates a PDF binary from HTML and CSS using Gotenberg.
   """
   def generate_pdf_from_html(html_binary, css_binary) do
+    # The JS payload you want to inject
+    wait_script = """
+      <script>
+        window.reportReady = false;
+        Promise.all(Array.from(document.images).filter(img => !img.complete).map(img => new Promise(resolve => { img.onload = img.onerror = resolve; }))).then(() => {
+          document.fonts.ready.then(() => { window.reportReady = true; });
+        });
+      </script>
+    </body>
+    """
+
+    # Replace the closing </body> tag with your script + the closing tag
+    final_html = String.replace(html_binary, "</body>", wait_script)
+
     case Req.post(gotenberg_url(),
            auth: gotenberg_auth(),
            headers: [{"gotenberg-timeout", "300s"}],
            receive_timeout: 300_000,
            form_multipart: [
-             files: {html_binary, filename: "index.html"},
+             files: {final_html, filename: "index.html"},
              files: {css_binary, filename: "report.css"},
              preferCssPageSize: "true",
              # Skip the unreliable network idle waits
