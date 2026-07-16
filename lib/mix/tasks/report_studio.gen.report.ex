@@ -63,7 +63,10 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     web_dir = "lib/#{Macro.underscore(web_module_name)}"
 
     # 1. Define paths and names
-    heex_path = "#{web_dir}/controllers/page_html/#{name}.html.heex"
+    camelized_name = Macro.camelize(name)
+    controller_path = "#{web_dir}/controllers/#{name}_controller.ex"
+    html_path = "#{web_dir}/controllers/#{name}_html.ex"
+    heex_path = "#{web_dir}/controllers/#{name}_html/index.html.heex"
     css_path = "assets/css/#{name}.css"
 
     heex_content = """
@@ -94,18 +97,20 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
 
     css_content = """
     @import "tailwindcss" source(none);
-    @source "../../#{web_dir}/controllers/page_html/#{name}.html.heex";
+    @source "../../#{web_dir}/controllers/#{name}_html/index.html.heex";
     @source ".";
     """
 
     route_code = """
-        get "/#{name}", PageController, :#{name}
-        get "/#{name}-preview", PageController, :#{name}_preview
+        get "/#{name}", #{camelized_name}Controller, :index
+        get "/#{name}-preview", #{camelized_name}Controller, :preview
     """
 
-    controller_actions = """
+    controller_content = """
+    defmodule #{web_module_name}.#{camelized_name}Controller do
+      use #{web_module_name}, :controller
 
-      def #{name}(conn, _params) do
+      def index(conn, _params) do
         assigns = %{
           #{name}s: [
             %{name: "Cham Roeun"},
@@ -113,10 +118,10 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
           ]
         }
 
-        ReportStudio.PDFGenerator.render_report(conn, :#{name}, assigns)
+        ReportStudio.PDFGenerator.render_report(conn, :index, assigns)
       end
 
-      def #{name}_preview(conn, _params) do
+      def preview(conn, _params) do
         assigns = %{
           #{name}s: [
             %{name: "Cham Roeun"},
@@ -124,11 +129,20 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
           ]
         }
 
-        template = #{web_module_name}.PageHTML.#{name}(assigns)
+        template = #{web_module_name}.#{camelized_name}HTML.index(assigns)
         css_path = Application.app_dir(:#{app_name}, "priv/static/assets/css/#{name}.css")
         result = ReportStudio.PDFGenerator.generate_pdf(template, css_path)
         ReportStudio.PDFGenerator.send_inline_pdf(conn, result, "report.pdf")
       end
+    end
+    """
+
+    html_content = """
+    defmodule #{web_module_name}.#{camelized_name}HTML do
+      use #{web_module_name}, :html
+
+      embed_templates "#{name}_html/*"
+    end
     """
 
     # 2. Add files and configurations
@@ -139,38 +153,14 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
     # Create new files
     |> Igniter.create_new_file(heex_path, heex_content)
     |> Igniter.create_new_file(css_path, css_content)
-    # Ensure PageController and PageHTML are loaded from potential locations
-    |> then(fn igniter ->
-      igniter
-      |> Igniter.include_existing_file("#{web_dir}/controllers/page_controller.ex")
-      |> Igniter.include_existing_file("#{web_dir}/page_html.ex")
-      |> Igniter.include_existing_file("#{web_dir}/controllers/page_html.ex")
-    end)
-    # Create PageController if missing
-    |> then(fn igniter ->
-      {exists?, igniter} =
-        Igniter.Project.Module.module_exists(igniter, Module.concat(web_module, PageController))
-
-      if exists? do
-        igniter
-      else
-        Igniter.create_new_file(
-          igniter,
-          "#{web_dir}/controllers/page_controller.ex",
-          """
-          defmodule #{web_module_name}.PageController do
-            use #{web_module_name}, :controller
-          end
-          """
-        )
-      end
-    end)
+    |> Igniter.create_new_file(controller_path, controller_content)
+    |> Igniter.create_new_file(html_path, html_content)
     # Append route to router.ex using manual update to target the Web scope
     |> Igniter.update_file("#{web_dir}/router.ex", fn source ->
       content = Rewrite.Source.get(source, :content)
 
       new_content =
-        if String.contains?(content, "get \"/#{name}\", PageController") do
+        if String.contains?(content, "get \"/#{name}\", #{camelized_name}Controller") do
           content
         else
           String.replace(
@@ -178,21 +168,6 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
             "scope \"/\", #{web_module_name} do\n    pipe_through :browser",
             "scope \"/\", #{web_module_name} do\n    pipe_through :browser\n#{route_code}"
           )
-        end
-
-      Rewrite.Source.update(source, :content, new_content)
-    end)
-    # Append actions to page_controller.ex
-    |> Igniter.update_file("#{web_dir}/controllers/page_controller.ex", fn source ->
-      content = Rewrite.Source.get(source, :content)
-
-      new_content =
-        if String.contains?(content, "def #{name}(") do
-          content
-        else
-          content
-          |> String.trim_trailing()
-          |> String.replace_suffix("end", controller_actions <> "\nend")
         end
 
       Rewrite.Source.update(source, :content, new_content)
