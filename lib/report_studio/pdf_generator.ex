@@ -27,10 +27,11 @@ defmodule ReportStudio.PDFGenerator do
              files: {html_binary, filename: "index.html"},
              files: {css_binary, filename: "report.css"},
              preferCssPageSize: "true",
-             # Disable strict network idle (0 connections)
+             # Skip the unreliable network idle waits
              skipNetworkIdleEvent: "true",
-             # Enable almost network idle (max 2 connections)
-             skipNetworkAlmostIdleEvent: "false"
+             skipNetworkAlmostIdleEvent: "true",
+             # Wait for our custom Javascript flag
+             waitForExpression: "window.reportReady === true"
            ]
          ) do
       {:ok, %Req.Response{status: 200, body: pdf_binary}} ->
