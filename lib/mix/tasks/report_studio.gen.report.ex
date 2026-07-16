@@ -198,7 +198,7 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
       Rewrite.Source.update(source, :content, new_content)
     end)
     # Configure config/config.exs
-    |> Igniter.Project.Config.configure(
+    |> Igniter.Project.Config.configure_new(
       "config.exs",
       :report_studio,
       [:gotenberg_url],
@@ -207,7 +207,7 @@ defmodule Mix.Tasks.ReportStudio.Gen.Report do
          "System.get_env(\"GOTENBERG_URL\") || \"https://gotenberg.domain.com/forms/chromium/convert/html\""
        )}
     )
-    |> Igniter.Project.Config.configure(
+    |> Igniter.Project.Config.configure_new(
       "config.exs",
       :report_studio,
       [:gotenberg_auth],
